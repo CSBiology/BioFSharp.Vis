@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net47</TargetFrameworks>
+    <RootNamespace>BioFSharp.Vis</RootNamespace>
+    <AssemblyName>BioFSharp.Vis</AssemblyName>
+    <Name>BioFSharp.Vis</Name>
+    <OutputType>Library</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Optional: Declare that the Repository URL can be published to NuSpec -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Optional: Embed source files that are not tracked by the source control manager to the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Optional: Include PDB in the built .nupkg -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Timo Muehlhaus, Kevin Schneider, CSBiology open source contributors</Authors>
+    <Description>Data visualization for bioinformatic purposes</Description>
+    <Summary>Data visualization for bioinformatic purposes, containing for instance Venn and Chord diagramms</Summary>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://csbiology.github.io/BioFSharp.Vis</PackageProjectUrl>
+    <PackageTags>fsharp csharp dotnet bioinformatics visualization data-viz</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/CSBiology/BioFSharp/master/docsrc/files/img/logo.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/CSBiology/BioFSharp.Vis</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <FsDocsLicenseLink>https://github.com/CSBiology/BioFSharp.Vis/blob/main/LICENSE</FsDocsLicenseLink>
+    <FsDocsReleaseNotesLink>https://github.com/CSBiology/BioFSharp.Vis/blob/main/RELEASE_NOTES.md</FsDocsReleaseNotesLink>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="HtmlScaffold.fs" />
+    <Compile Include="ViewContainer.fs" />
+    <Compile Include="Venn.fs" />
+    <Compile Include="Chord.fs" />
+    <None Include="Playground\Chord.fsx" />
+    <None Include="Playground\HtmlScaffold.fsx" />
+    <None Include="Playground\Venn.fsx" />
+    <None Include="Playground\ViewContainer.fsx" />
+    <EmbeddedResource Include="Resources\chart.css" />
+    <EmbeddedResource Include="Resources\chord2.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml" Version="4.0.0.1" />
+  </ItemGroup>
+</Project>
