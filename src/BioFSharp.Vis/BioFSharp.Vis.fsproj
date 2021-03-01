@@ -43,6 +43,7 @@
     <EmbeddedResource Include="Resources\chord2.js" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.*"/>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
     <PackageReference Include="Microsoft.Xaml" Version="4.0.0.1" />
   </ItemGroup>
