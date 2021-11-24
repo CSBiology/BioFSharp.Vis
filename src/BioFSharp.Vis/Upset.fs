@@ -8,11 +8,15 @@ module Upset =
     
     let createLinearAxisWithRange (maxRange: float) =
         let range  = StyleParam.Range.MinMax (-0.5,maxRange)
-        LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels= false, ZeroLine=false)
+        LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels=false, ZeroLine=false)
+
+    let createLinearAxisWithRangeDomain (maxRange: float) (domain: float*float) =
+        let range  = StyleParam.Range.MinMax (-0.5,maxRange)
+        LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels= false, ZeroLine=false, Domain=StyleParam.Range.MinMax domain)
 
     let createLinearAxisWithRangeTickLabel (maxRange: float) (labels: string[]) =
         let range  = StyleParam.Range.MinMax (-0.5,maxRange)
-        LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels= true, ZeroLine=false, TickMode = StyleParam.TickMode.Array, TickVals = [0 .. labels.Length - 1], TickText = labels)
+        LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels=true, ZeroLine=false, TickMode=StyleParam.TickMode.Array, TickVals=[0 .. labels.Length - 1], TickText=labels)
 
     let createIntersectionLineChart (data: (int*int)[]) (markerSize: int) (color: Color) =
         Chart.Line (
@@ -35,28 +39,22 @@ module Upset =
             Color = color
         )
 
-    let createIntersectionPlotPart (position:int) (intersectingSets: string) (labelIDs: Map<string,int>) (markerSize: int) (colorIntersecting: Color) (colorNotIntersecting: Color) =
-        let setIDsPresent =
-            intersectingSets.Split '&'
-            |> Array.map (fun set -> labelIDs.[set])
-        let setIDsNotPresent =
-            [|0 .. labelIDs.Count - 1|]
-            |> Array.filter (fun id -> 
-                setIDsPresent
-                |> Array.contains id
-                |> not
-            )
+    let createIntersectionPlotPart (position:int) (intersectingSets: string) (labelIDs: (string*int)[]) (markerSize: int) (colorIntersecting: Color) (colorNotIntersecting: Color) =
+        let setIDsPresent, setIDsNotPresent =
+            let intersectingSetsArray = intersectingSets.Split '&'
+            labelIDs
+            |> Array.partition (fun (label,_) -> intersectingSetsArray |> Array.contains label)
         let lineChart =
             let idWithPosition =
                 setIDsPresent
-                |> Array.map (fun id ->
+                |> Array.map (fun (_,id) ->
                     position,id
                 )
             createIntersectionLineChart idWithPosition markerSize colorIntersecting
         let pointChart =
             let idWithPosition =
                 setIDsNotPresent
-                |> Array.map (fun id ->
+                |> Array.map (fun (_,id) ->
                     position,id
                 )
             createIntersectionPointChart idWithPosition markerSize colorNotIntersecting
@@ -66,7 +64,7 @@ module Upset =
         ]
         |> Chart.combine
 
-    let createSetSizePlot (labels:array<string>) (sets:array<Set<'a>>) (maxY: float) (color: Color) =
+    let createSetSizePlot (labels:array<string>) (sets:array<Set<'a>>) (maxY: float) (color: Color) (domainSet: float*float) =
         let labelCount =
             Array.map2 (fun label (set: Set<'a>) ->
                 label, set.Count
@@ -76,29 +74,28 @@ module Upset =
             |> Array.maxBy snd
             |> snd
         Chart.Bar (labelCount, Color = color)
-        |> Chart.withXAxisStyle("Set Size",MinMax = (float maxSetSize,0.))
+        |> Chart.withXAxisStyle("Set Size",MinMax = (float maxSetSize,0.), Domain = domainSet)
         |> Chart.withYAxis (createLinearAxisWithRange maxY)
         |> Chart.withTraceName(ShowLegend=false)
 
-    let createIntersectionSizePlots (intersectionCount: (string*int)[]) (maxX: float) (color: Color) =
+    let createIntersectionSizePlots (intersectionCount: (string*int)[]) (maxX: float) (color: Color) (domainIntersection: float*float) =
         intersectionCount
         |> Array.map snd
         |> fun count -> 
             Chart.Column(count, Color = color)
-        |> Chart.withXAxis (createLinearAxisWithRange maxX)
+        |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
         |> Chart.withYAxisStyle("Intersection Size")
         |> Chart.withTraceName(ShowLegend=false)
 
-    let createUpsetWith (labels:array<string>) (sets:array<Set<'a>>) (markerSize: int) (mainColor: Color) (secondaryColor: Color) =
+    let createUpsetWith (labels:array<string>) (sets:array<Set<'a>>) (markerSize: int) (mainColor: Color) (secondaryColor: Color) (domainSet: float*float) (domainIntersection: float*float) =
         let labelIDs =
             labels
             |> Array.mapi (fun i label -> label,i)
-            |> Map.ofArray
         let vennCount =
             Venn.ofSetList labels sets
             |> Venn.toVennCount
             |> Map.toArray
-            |> Array.filter (fun (id,count) -> id <> "union")
+            |> Array.filter (fun (id,_) -> id <> "union")
             |> Array.sortByDescending snd
         let maxX = float vennCount.Length - 0.5
         let maxY = float labels.Length - 0.5
@@ -109,10 +106,10 @@ module Upset =
             )
             |> Chart.combine
             |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels)
-            |> Chart.withXAxis (createLinearAxisWithRange maxX)
+            |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
             |> Chart.withTraceName(ShowLegend=false)
-        let setSizePlot = createSetSizePlot labels sets maxY mainColor
-        let intersectionSizePlot = createIntersectionSizePlots vennCount maxX mainColor
+        let setSizePlot = createSetSizePlot labels sets maxY mainColor domainSet
+        let intersectionSizePlot = createIntersectionSizePlots vennCount maxX mainColor domainIntersection
         let grid =
             [
                 Chart.Invisible()
@@ -124,4 +121,4 @@ module Upset =
         grid
 
     let createUpset (labels:array<string>) (sets:array<Set<'a>>) =
-        createUpsetWith labels sets 15 Color.Table.Office.darkBlue Color.Table.Office.lightBlue
+        createUpsetWith labels sets 15 Color.Table.Office.darkBlue Color.Table.Office.lightBlue (0.,0.2) (0.3,1.)
