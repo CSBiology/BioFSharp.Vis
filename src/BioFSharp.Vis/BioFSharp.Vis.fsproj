@@ -34,6 +34,7 @@
     <Compile Include="HtmlScaffold.fs" />
     <Compile Include="ViewContainer.fs" />
     <Compile Include="Venn.fs" />
+    <Compile Include="Upset.fs" />
     <Compile Include="Chord.fs" />
     <None Include="Playground\Chord.fsx" />
     <None Include="Playground\HtmlScaffold.fsx" />
@@ -43,8 +44,9 @@
     <EmbeddedResource Include="Resources\chord2.js" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.*"/>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Update="FSharp.Core" Version="4.*" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Xaml" Version="4.0.0.1" />
+    <PackageReference Include="Plotly.NET" Version="2.0.0-preview.12" />
   </ItemGroup>
 </Project>
