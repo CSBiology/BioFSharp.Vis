@@ -1,11 +1,10 @@
 ﻿namespace BioFSharp.Vis
 
+open Plotly.NET
+open Plotly.NET.LayoutObjects
 
-module Upset =
+module UpsetParts =
 
-    open Plotly.NET
-    open Plotly.NET.LayoutObjects
-    
     let combineArrayAlternating (a: array<'a>) (b: array<'a>) =
         List.fold2 (fun acc a' b' ->
             b'::a'::acc   
@@ -111,6 +110,10 @@ module Upset =
         |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
         |> Chart.withYAxisStyle (title, TitleFont=textFont)
 
+module Upset =
+
+    open UpsetParts
+    
     let createUpsetWith (labels:array<string>) (sets:array<Set<'a>>) (setData: array<Map<'a,'b>>) (setDataChartsTitle: array<(array<'b> -> GenericChart.GenericChart)*string>) 
         (markerSize: int) (mainColor: Color) (secondaryColor: Color) (domainSet: float*float) (domainIntersection: float*float) (textFont: Font) (maxIntersections: int) =
         let labelIDs =
