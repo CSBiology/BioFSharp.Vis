@@ -136,66 +136,83 @@ module Upset =
     /// - domainIntersection: Range for the intersection part of the plot (right side). Range goes from 0 to 1 
     /// - textFont: Text font used for axis descriptions 
     /// - maxIntersections: Maximum number of intersections displayed
-    let createUpsetWith (labels:array<string>) (sets:array<Set<'a>>) (setData: array<Map<'a,'b>>) (setDataChartsTitle: array<(array<'b> -> GenericChart.GenericChart)*string>) 
-        (markerSize: int) (mainColor: Color) (secondaryColor: Color) (domainSet: float*float) (domainIntersection: float*float) (textFont: Font) (maxIntersections: int) =
-        let labelIDs =
-            labels
-            |> Array.mapi (fun i label -> label,i)
-        let venn =
-            Venn.ofSetList labels sets|> Map.toArray
-            |> Array.map (fun (_,labelSet) -> 
-                labelSet.Label, labelSet.Set
-            )
-            |> Array.filter (fun (id,_) -> not id.IsEmpty)
-            |> Array.sortByDescending (snd >> Set.count)
-            |> fun v ->
-                if v.Length <= maxIntersections then
-                    v
-                else
-                    v
-                    |> Array.take maxIntersections
-        let vennCount =
-            venn
-            |> Array.map (fun (id,set) -> id,set.Count)
-        let maxX = float vennCount.Length - 0.5
-        let maxY = float labels.Length - 0.5
-        let intersectionData =
-            setData
-            |> Array.map (alignIntersectionData venn)
-        let intersectionDataCharts =
-            let charts =
-                intersectionData
-                |> Array.map2 (fun (chartFun,title) sD ->
-                    createIntersectionDataPlots sD title maxX chartFun domainIntersection textFont
-                ) setDataChartsTitle
-            let emptyCharts = 
-                [|0 .. setData.Length - 1|]
-                |> Array.map (fun _ -> Chart.Invisible())
-            combineArrayAlternating emptyCharts charts
-        let intersectionPlot =
-            vennCount
-            |> Array.mapi (fun position (intersectingSets,_) ->
-                createIntersectionPlotPart position intersectingSets labelIDs markerSize mainColor secondaryColor
-            )
-            |> Chart.combine
-            |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels textFont)
-            |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
-            |> Chart.withTraceName(ShowLegend=false)
-        let setSizePlot = createSetSizePlot labels sets maxY mainColor domainSet textFont
-        let intersectionSizePlot = createIntersectionSizePlots vennCount maxX mainColor domainIntersection textFont
-        let grid =
-            Array.append
-                intersectionDataCharts
-                [|
-                    Chart.Invisible()
-                    intersectionSizePlot
-                    setSizePlot
-                    intersectionPlot
-                |]
-            |> Chart.Grid(2+setData.Length,2)
-        grid
-
-    /// Creates an Upset Plot (https://upset.app/) from given labels and sets. 
-    /// This function uses predefined styling. For more customization options use "createUpsetWith"
-    let createUpset (labels: array<string>) (sets: array<Set<'a>>) =
-        createUpsetWith labels sets [||] [||] 15 Color.Table.Office.darkBlue Color.Table.Office.lightBlue (0., 0.2) (0.3, 1.) (Font.init(StyleParam.FontFamily.Arial, Size=20.)) 20
+    type Chart with
+        static member Upset 
+            (
+                (labels:array<string>),
+                (sets:array<Set<'a>>),
+                (?setData: array<Map<'a,'b>>),
+                (?setDataChartsTitle: array<(array<'b> -> GenericChart.GenericChart)*string>),
+                (?markerSize: int),
+                (?mainColor: Color),
+                (?secondaryColor: Color),
+                (?domainSet: float*float),
+                (?domainIntersection: float*float),
+                (?textFont: Font),
+                (?maxIntersections: int)
+            ) =
+            let setData            = setData            |> Option.defaultValue Array.empty
+            let setDataChartsTitle = setDataChartsTitle |> Option.defaultValue Array.empty
+            let markerSize         = markerSize         |> Option.defaultValue 25
+            let mainColor          = mainColor          |> Option.defaultValue Color.Table.Office.darkBlue
+            let secondaryColor     = secondaryColor     |> Option.defaultValue Color.Table.Office.lightBlue
+            let domainSet          = domainSet          |> Option.defaultValue (0., 0.2)
+            let domainIntersection = domainIntersection |> Option.defaultValue (0.3, 1.)
+            let textFont           = textFont           |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
+            let maxIntersections   = maxIntersections   |> Option.defaultValue 20
+            let labelIDs =
+                labels
+                |> Array.mapi (fun i label -> label,i)
+            let venn =
+                Venn.ofSetList labels sets|> Map.toArray
+                |> Array.map (fun (_,labelSet) -> 
+                    labelSet.Label, labelSet.Set
+                )
+                |> Array.filter (fun (id,_) -> not id.IsEmpty)
+                |> Array.sortByDescending (snd >> Set.count)
+                |> fun v ->
+                    if v.Length <= maxIntersections then
+                        v
+                    else
+                        v
+                        |> Array.take maxIntersections
+            let vennCount =
+                venn
+                |> Array.map (fun (id,set) -> id,set.Count)
+            let maxX = float vennCount.Length - 0.5
+            let maxY = float labels.Length - 0.5
+            let intersectionData =
+                setData
+                |> Array.map (alignIntersectionData venn)
+            let intersectionDataCharts =
+                let charts =
+                    intersectionData
+                    |> Array.map2 (fun (chartFun,title) sD ->
+                        createIntersectionDataPlots sD title maxX chartFun domainIntersection textFont
+                    ) setDataChartsTitle
+                let emptyCharts = 
+                    [|0 .. setData.Length - 1|]
+                    |> Array.map (fun _ -> Chart.Invisible())
+                combineArrayAlternating emptyCharts charts
+            let intersectionPlot =
+                vennCount
+                |> Array.mapi (fun position (intersectingSets,_) ->
+                    createIntersectionPlotPart position intersectingSets labelIDs markerSize mainColor secondaryColor
+                )
+                |> Chart.combine
+                |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels textFont)
+                |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
+                |> Chart.withTraceName(ShowLegend=false)
+            let setSizePlot = createSetSizePlot labels sets maxY mainColor domainSet textFont
+            let intersectionSizePlot = createIntersectionSizePlots vennCount maxX mainColor domainIntersection textFont
+            let grid =
+                Array.append
+                    intersectionDataCharts
+                    [|
+                        Chart.Invisible()
+                        intersectionSizePlot
+                        setSizePlot
+                        intersectionPlot
+                    |]
+                |> Chart.Grid(2+setData.Length,2)
+            grid
