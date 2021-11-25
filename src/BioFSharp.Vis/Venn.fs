@@ -183,10 +183,15 @@ module Venn =
                         let multipleLabels =
                             vennCount
                             |> Array.filter (fun (label,_) -> label.Length > 1)
+
+                        let checkLabel (labels: string[]) (singleLabels: string[]) i1 i2 =
+                            labels |> Array.contains singleLabels.[i1] &&
+                            labels |> Array.contains singleLabels.[i2]
+
                         [|
-                            multipleLabels |> Array.filter (fun (label,_) -> label |> Array.contains singleLabels.[0] && label |> Array.contains singleLabels.[1] && label.Length = 2)
-                            multipleLabels |> Array.filter (fun (label,_) -> label |> Array.contains singleLabels.[0] && label |> Array.contains singleLabels.[2] && label.Length = 2)
-                            multipleLabels |> Array.filter (fun (label,_) -> label |> Array.contains singleLabels.[1] && label |> Array.contains singleLabels.[2] && label.Length = 2)
+                            multipleLabels |> Array.filter (fun (label,_) -> checkLabel label singleLabels 0 1 && label.Length = 2)
+                            multipleLabels |> Array.filter (fun (label,_) -> checkLabel label singleLabels 0 2 && label.Length = 2)
+                            multipleLabels |> Array.filter (fun (label,_) -> checkLabel label singleLabels 1 2 && label.Length = 2)
                             multipleLabels |> Array.filter (fun (label,_) -> label.Length = 3)
                         |]
                         |> Array.concat
