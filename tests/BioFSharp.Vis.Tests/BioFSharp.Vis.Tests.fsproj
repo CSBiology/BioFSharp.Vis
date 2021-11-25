@@ -1,13 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net47</TargetFramework>
-    <TargetFramework>net47</TargetFramework>
     <RootNamespace>BioFSharp.Vis.Tests</RootNamespace>
     <AssemblyName>BioFSharp.Vis.Tests</AssemblyName>
     <Name>BioFSharp.Vis.Tests</Name>
-    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
@@ -18,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.*"/>
+    <PackageReference Update="FSharp.Core" Version="4.6.*"/>
     <PackageReference Include="Expecto" Version="9.*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
   </ItemGroup>
