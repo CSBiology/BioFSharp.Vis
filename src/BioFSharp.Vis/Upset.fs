@@ -135,6 +135,7 @@ module Upset =
     /// - domainSet: Range for the set size part of the plot (left side). Range goes from 0 to 1 
     /// - domainIntersection: Range for the intersection part of the plot (right side). Range goes from 0 to 1 
     /// - textFont: Text font used for axis descriptions 
+    /// - textFontLabel: Text font used for label descriptions 
     /// - maxIntersections: Maximum number of intersections displayed
     type Chart with
         static member Upset 
@@ -149,6 +150,7 @@ module Upset =
                 (?domainSet: float*float),
                 (?domainIntersection: float*float),
                 (?textFont: Font),
+                (?textFontLabel: Font),
                 (?maxIntersections: int)
             ) =
             let setData            = setData            |> Option.defaultValue Array.empty
@@ -159,12 +161,14 @@ module Upset =
             let domainSet          = domainSet          |> Option.defaultValue (0., 0.2)
             let domainIntersection = domainIntersection |> Option.defaultValue (0.3, 1.)
             let textFont           = textFont           |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
+            let textFontLabel      = textFontLabel      |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
             let maxIntersections   = maxIntersections   |> Option.defaultValue 20
             let labelIDs =
                 labels
                 |> Array.mapi (fun i label -> label,i)
             let venn =
-                Venn.ofSetList labels sets|> Map.toArray
+                Venn.ofSetList labels sets
+                |> Map.toArray
                 |> Array.map (fun (_,labelSet) -> 
                     labelSet.Label, labelSet.Set
                 )
@@ -200,7 +204,7 @@ module Upset =
                     createIntersectionPlotPart position intersectingSets labelIDs markerSize mainColor secondaryColor
                 )
                 |> Chart.combine
-                |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels textFont)
+                |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels textFontLabel)
                 |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
                 |> Chart.withTraceName(ShowLegend=false)
             let setSizePlot = createSetSizePlot labels sets maxY mainColor domainSet textFont
