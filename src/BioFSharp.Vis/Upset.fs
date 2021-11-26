@@ -3,7 +3,7 @@
 open Plotly.NET
 open Plotly.NET.LayoutObjects
 
-module UpsetParts =
+module UpSetParts =
     
     /// Combines two arrays by taking the next element alternating from array a and b
     let combineArrayAlternating (a: array<'a>) (b: array<'a>) =
@@ -123,9 +123,9 @@ module UpsetParts =
         |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
         |> Chart.withYAxisStyle (title, TitleFont=textFont)
 
-module Upset =
+module UpSet =
 
-    open UpsetParts
+    open UpSetParts
     
     /// Creates an Upset Plot (https://upset.app/) from given labels and sets. 
     /// Includes additional customization parameters: 
@@ -136,9 +136,11 @@ module Upset =
     /// - domainIntersection: Range for the intersection part of the plot (right side). Range goes from 0 to 1 
     /// - textFont: Text font used for axis descriptions 
     /// - textFontLabel: Text font used for label descriptions 
-    /// - maxIntersections: Maximum number of intersections displayed
+    /// - minIntersectionSize: Minimal number of elements in an intersection
+    /// - sortIntersectionsBy: Sorting function for intersections. The first element of the tuple is a list of sets in the intersection, the second part 
+    ///   a Set of intersecting elements
     type Chart with
-        static member Upset 
+        static member UpSet 
             (
                 (labels:array<string>),
                 (sets:array<Set<'a>>),
@@ -151,18 +153,20 @@ module Upset =
                 (?domainIntersection: float*float),
                 (?textFont: Font),
                 (?textFontLabel: Font),
-                (?maxIntersections: int)
+                (?minIntersectionSize: int),
+                (?sortIntersectionsBy: ((string list * Set<'a>)[]) -> ((string list * Set<'a>)[]))
             ) =
-            let setData            = setData            |> Option.defaultValue Array.empty
-            let setDataChartsTitle = setDataChartsTitle |> Option.defaultValue Array.empty
-            let markerSize         = markerSize         |> Option.defaultValue 25
-            let mainColor          = mainColor          |> Option.defaultValue Color.Table.Office.darkBlue
-            let secondaryColor     = secondaryColor     |> Option.defaultValue Color.Table.Office.lightBlue
-            let domainSet          = domainSet          |> Option.defaultValue (0., 0.2)
-            let domainIntersection = domainIntersection |> Option.defaultValue (0.3, 1.)
-            let textFont           = textFont           |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
-            let textFontLabel      = textFontLabel      |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
-            let maxIntersections   = maxIntersections   |> Option.defaultValue 20
+            let setData             = setData             |> Option.defaultValue Array.empty
+            let setDataChartsTitle  = setDataChartsTitle  |> Option.defaultValue Array.empty
+            let markerSize          = markerSize          |> Option.defaultValue 25
+            let mainColor           = mainColor           |> Option.defaultValue Color.Table.Office.darkBlue
+            let secondaryColor      = secondaryColor      |> Option.defaultValue Color.Table.Office.lightBlue
+            let domainSet           = domainSet           |> Option.defaultValue (0., 0.2)
+            let domainIntersection  = domainIntersection  |> Option.defaultValue (0.3, 1.)
+            let textFont            = textFont            |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
+            let textFontLabel       = textFontLabel       |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
+            let minIntersectionSize = minIntersectionSize |> Option.defaultValue 5
+            let sortIntersectionsBy = sortIntersectionsBy |> Option.defaultValue id
             let labelIDs =
                 labels
                 |> Array.mapi (fun i label -> label,i)
@@ -172,14 +176,8 @@ module Upset =
                 |> Array.map (fun (_,labelSet) -> 
                     labelSet.Label, labelSet.Set
                 )
-                |> Array.filter (fun (id,_) -> not id.IsEmpty)
-                |> Array.sortByDescending (snd >> Set.count)
-                |> fun v ->
-                    if v.Length <= maxIntersections then
-                        v
-                    else
-                        v
-                        |> Array.take maxIntersections
+                |> Array.filter (fun (id,s) -> not id.IsEmpty && s.Count >= minIntersectionSize)
+                |> sortIntersectionsBy
             let vennCount =
                 venn
                 |> Array.map (fun (id,set) -> id,set.Count)
