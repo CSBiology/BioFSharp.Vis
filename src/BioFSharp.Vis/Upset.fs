@@ -166,7 +166,7 @@ module UpSet =
             let textFont            = textFont            |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
             let textFontLabel       = textFontLabel       |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
             let minIntersectionSize = minIntersectionSize |> Option.defaultValue 5
-            let sortIntersectionsBy = sortIntersectionsBy |> Option.defaultValue id
+            let sortIntersectionsBy = sortIntersectionsBy |> Option.defaultValue (Array.sortByDescending(snd >> Set.count))
             let labelIDs =
                 labels
                 |> Array.mapi (fun i label -> label,i)
