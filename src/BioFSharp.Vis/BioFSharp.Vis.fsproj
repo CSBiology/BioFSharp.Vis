@@ -18,9 +18,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <PropertyGroup>
-    <Authors>Timo Muehlhaus, Kevin Schneider, CSBiology open source contributors</Authors>
+    <Authors>Timo Muehlhaus, Kevin Schneider, Jonathan Ott, CSBiology open source contributors</Authors>
     <Description>Data visualization for bioinformatic purposes</Description>
-    <Summary>Data visualization for bioinformatic purposes, containing for instance Venn and Chord diagramms</Summary>
+    <Summary>Data visualization for bioinformatic purposes, containing for instance Venn, UpSet and Chord diagramms</Summary>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://csbiology.github.io/BioFSharp.Vis</PackageProjectUrl>
     <PackageTags>fsharp csharp dotnet bioinformatics visualization data-viz</PackageTags>
