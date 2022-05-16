@@ -103,7 +103,7 @@ module Venn =
     
             match sets.Length with
             | 2 ->
-                let colors = colors |> Option.defaultValue ([|Color.Table.Office.blue; Color.Table.Office.red|])
+                let colors = colors |> Option.defaultValue ([|Color.fromKeyword Blue; Color.fromKeyword Red|])
                 let shapes =
                     Array.zip
                         [|
@@ -124,15 +124,15 @@ module Venn =
                                 Bottom = 100
                             )
                     )
-                    |> Layout.AddLinearAxis(StyleParam.SubPlotId.XAxis 1, axis)
-                    |> Layout.AddLinearAxis(StyleParam.SubPlotId.YAxis 1, axis)
-                let positionSet,textSet =
+                    |> Layout.updateLinearAxisById(StyleParam.SubPlotId.XAxis 1, axis)
+                    |> Layout.updateLinearAxisById(StyleParam.SubPlotId.YAxis 1, axis)
+                let textSet =
                     let vennSingleText =
                         vennCount
                         |> Array.filter (fun (label,_) -> label.Length = 1)
                         |> Array.map (fun (label,count) ->
                             sprintf "%s<br>%i" label.[0] count
-                        )       
+                        )
                     let intersectionText =
                         vennCount
                         |> Array.filter (fun (label,_) -> label.Length > 1)
@@ -140,17 +140,20 @@ module Venn =
                             sprintf "%i" count
                         )
                             
-                    [|1.,1.;2.5,1.;1.75,1.|],
                     Array.append vennSingleText intersectionText
-                Chart.Scatter(
-                    positionSet,
-                    StyleParam.Mode.Text,
-                    Labels = textSet,
-                    TextFont = textFont
+                Trace2D.initScatter(
+                    Trace2DStyle.Scatter(
+                        X = [|1.; 2.5; 1.75|],
+                        Y = [|1.; 1.; 1.|],
+                        Mode = StyleParam.Mode.Text,
+                        MultiText = textSet,
+                        TextFont = textFont
+                    )
                 )
+                |> GenericChart.ofTraceObject true
                 |> Chart.withLayout layout
             | 3 ->
-                let colors = colors |> Option.defaultValue ([|Color.Table.Office.blue; Color.Table.Office.red; Color.Table.Office.green|])
+                let colors = colors |> Option.defaultValue ([|Color.fromKeyword Blue; Color.fromKeyword Red; Color.fromKeyword Green|])
                 let shapes =
                     Array.zip
                         [|
@@ -166,9 +169,9 @@ module Venn =
                     Layout.init(
                         Shapes = shapes
                     )
-                    |> Layout.AddLinearAxis(StyleParam.SubPlotId.XAxis 1, axis)
-                    |> Layout.AddLinearAxis(StyleParam.SubPlotId.YAxis 1, axis)
-                let positionSet,textSet =
+                    |> Layout.updateLinearAxisById(StyleParam.SubPlotId.XAxis 1, axis)
+                    |> Layout.updateLinearAxisById(StyleParam.SubPlotId.YAxis 1, axis)
+                let textSet =
                     let vennSingleText =
                         vennCount
                         |> Array.filter (fun (label,_) -> label.Length = 1)
@@ -198,15 +201,17 @@ module Venn =
                         |> Array.map (fun (label,count) ->
                             sprintf "%i" count
                         )
-                            
-                    [|1.,1.;2.5,1.;1.75,2.25;1.75,1.; 1.325,1.6625;2.125,1.6625;1.75,1.45|],
                     Array.append vennSingleText intersectionText
-                Chart.Scatter(
-                    positionSet,
-                    StyleParam.Mode.Text,
-                    Labels = textSet,
-                    TextFont = textFont
+                Trace2D.initScatter(
+                    Trace2DStyle.Scatter(
+                        X = [|1.; 2.5; 1.75; 1.75; 1.325; 2.125; 1.75|],
+                        Y = [|1.; 1.; 2.25; 1.; 1.6625; 1.6625; 1.45|],
+                        Mode = StyleParam.Mode.Text,
+                        MultiText = textSet,
+                        TextFont = textFont
+                    )
                 )
+                |> GenericChart.ofTraceObject true
                 |> Chart.withLayout layout
             | _ -> failwith "Only 2 or 3 sets are supported"
 
