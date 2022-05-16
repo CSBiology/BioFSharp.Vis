@@ -19,7 +19,7 @@ module UpSetParts =
         LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels=false, ZeroLine=false)
 
     /// Creates a linear axis without lines and ticks with a given range and domain
-    let createLinearAxisWithRangeDomain (maxRange: float) (domain: float*float) =
+    let createLinearAxisWithRangeDomain (maxRange: float) (domain) =
         let range  = StyleParam.Range.MinMax (-0.5,maxRange)
         LinearAxis.init(Range=range, ShowGrid=false, ShowLine=false, ShowTickLabels= false, ZeroLine=false, Domain=StyleParam.Range.MinMax domain)
 
@@ -33,9 +33,9 @@ module UpSetParts =
         Chart.Line (
             data,
             ShowMarkers = true,
-            Dash = StyleParam.DrawingStyle.Solid,
-            Width = (float markerSize / 5.),
-            Color = color
+            LineDash = StyleParam.DrawingStyle.Solid,
+            LineWidth = (float markerSize / 5.),
+            LineColor = color
         )
         |> Chart.withMarkerStyle(
             Symbol = StyleParam.MarkerSymbol.Circle,
@@ -88,20 +88,20 @@ module UpSetParts =
             labelCount
             |> Array.maxBy snd
             |> snd
-        Chart.Bar (labelCount, Color = color)
+        Chart.Bar (labelCount, MarkerColor = color)
         |> Chart.withXAxisStyle("Set Size",MinMax=(float maxSetSize,0.), Domain=domainSet, TitleFont=textFont)
         |> Chart.withYAxis (createLinearAxisWithRange maxY)
-        |> Chart.withTraceName(ShowLegend=false)
+        |> Chart.withTraceInfo(ShowLegend=false)
 
     /// Creates a bar chart with the intersection sizes
     let createIntersectionSizePlots (intersectionCount: (string list*int)[]) (maxX: float) (color: Color) (domainIntersection: float*float) (textFont: Font) =
         intersectionCount
         |> Array.map snd
         |> fun count -> 
-            Chart.Column(count, Color = color)
+            Chart.Column(count, MarkerColor = color)
         |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
         |> Chart.withYAxisStyle("Intersection Size", TitleFont=textFont)
-        |> Chart.withTraceName(ShowLegend=false)
+        |> Chart.withTraceInfo(ShowLegend=false)
 
     /// Aligns the map with Setelement->Feature to the intersections
     let alignIntersectionData (venn: (string list * Set<'a>)[]) (setData: Map<'a,'b>) =
@@ -159,8 +159,8 @@ module UpSet =
             let setData             = setData             |> Option.defaultValue Array.empty
             let setDataChartsTitle  = setDataChartsTitle  |> Option.defaultValue Array.empty
             let markerSize          = markerSize          |> Option.defaultValue 25
-            let mainColor           = mainColor           |> Option.defaultValue Color.Table.Office.darkBlue
-            let secondaryColor      = secondaryColor      |> Option.defaultValue Color.Table.Office.lightBlue
+            let mainColor           = mainColor           |> Option.defaultValue (Color.fromKeyword DarkBlue)
+            let secondaryColor      = secondaryColor      |> Option.defaultValue (Color.fromKeyword LightBlue)
             let domainSet           = domainSet           |> Option.defaultValue (0., 0.2)
             let domainIntersection  = domainIntersection  |> Option.defaultValue (0.3, 1.)
             let textFont            = textFont            |> Option.defaultValue (Font.init(StyleParam.FontFamily.Arial, Size=20.))
@@ -204,7 +204,7 @@ module UpSet =
                 |> Chart.combine
                 |> Chart.withYAxis (createLinearAxisWithRangeTickLabel maxY labels textFontLabel)
                 |> Chart.withXAxis (createLinearAxisWithRangeDomain maxX domainIntersection)
-                |> Chart.withTraceName(ShowLegend=false)
+                |> Chart.withTraceInfo(ShowLegend=false)
             let setSizePlot = createSetSizePlot labels sets maxY mainColor domainSet textFont
             let intersectionSizePlot = createIntersectionSizePlots vennCount maxX mainColor domainIntersection textFont
             let grid =
